@@ -1,0 +1,15 @@
+[
+    {
+      "question": "Do you have a persistent cough?",
+      "options": ["Yes", "No"]
+    },
+    {
+      "question": "Have you experienced sudden weight loss?",
+      "options": ["Yes", "No"]
+    },
+    {
+      "question": "Do you have night sweats?",
+      "options": ["Yes", "No"]
+    }
+  ]
+  

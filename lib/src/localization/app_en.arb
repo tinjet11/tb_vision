@@ -1,0 +1,6 @@
+{
+  "appTitle": "tb_vision",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
