@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tb_vision/src/auth/auth.dart';
 import 'package:tb_vision/src/questionaire/questionaire.dart';
 
 class Home extends StatefulWidget {
@@ -21,17 +22,32 @@ class _HomeState extends State<Home> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // App title section
-            const Padding(
-              padding: EdgeInsets.only(bottom: 20.0),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "TB Vision",
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  const SizedBox(width: 20), // Space between text and button
+                  ElevatedButton(
+                    onPressed: () => {
+                      logoutUser(),
+                      Navigator.pushReplacementNamed(context, "/login")
+                    }, // Call the logout function
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text("Logout"),
                   ),
                 ],
               ),
