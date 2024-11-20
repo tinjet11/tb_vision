@@ -472,6 +472,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DGU2YQJUWX;
 				ENABLE_BITCODE = NO;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -655,10 +656,17 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DGU2YQJUWX;
 				ENABLE_BITCODE = NO;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-fmodules",
+					"-fcxx-modules\n-fmodules",
+					"-fcxx-modules\n-fmodules",
+					"-fcxx-modules\n",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.tbVision;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -678,6 +686,7 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DGU2YQJUWX;
 				ENABLE_BITCODE = NO;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
