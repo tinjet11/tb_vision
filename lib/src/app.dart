@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tb_vision/src/auth/check_session.dart';
-import 'package:tb_vision/src/auth/login.dart';
-import 'package:tb_vision/src/auth/otp.dart';
-import 'package:tb_vision/src/home.dart';
+import 'package:tb_vision/src/screens/check_session.dart';
+import 'package:tb_vision/src/screens/login.dart';
+import 'package:tb_vision/src/screens/otp.dart';
+import 'package:tb_vision/src/screens/home.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
