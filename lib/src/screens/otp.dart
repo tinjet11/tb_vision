@@ -199,7 +199,11 @@ class _OTPPageState extends State<OTPPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (isResendAllowed) const Text("Don't receive the OTP?"),
+                      if (isResendAllowed)
+                        const Text(
+                          "Don't receive the OTP?",
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
                       TextButton(
                         onPressed: isResendAllowed
                             ? () async {

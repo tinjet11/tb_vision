@@ -92,7 +92,6 @@ class AssessmentCard extends StatelessWidget {
                   child: _buildActionButton(context),
                 ),
               ]),
-              // Action button section
             ],
           ),
         ),
@@ -148,6 +147,7 @@ class AssessmentCard extends StatelessWidget {
     return const Text(
       "Completed",
       style: TextStyle(
+        decoration: TextDecoration.underline,
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: Colors.green,

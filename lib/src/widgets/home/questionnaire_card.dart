@@ -107,6 +107,7 @@ class _QuestionnaireCardState extends State<QuestionnaireCard> {
     return const Text(
       "Completed",
       style: TextStyle(
+        decoration: TextDecoration.underline,
         fontSize: 16,
         fontWeight: FontWeight.w500,
         color: Colors.green,
