@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tb_vision/src/widgets/home/appointment_card.dart';
 import 'package:tb_vision/src/widgets/home/assessment_card.dart';
 import 'package:tb_vision/src/services/auth/auth.dart';
@@ -46,7 +45,6 @@ class _HomeState extends State<Home> {
 
       if (result.documents.isNotEmpty) {
         var adminDoc = result.documents.first;
-        print(adminDoc.data);
         setState(() {
           administrationData = Administration.fromJson(adminDoc.data);
           questionnaireData = administrationData?.questionnaireData;

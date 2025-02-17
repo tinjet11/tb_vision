@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:tb_vision/src/screens/home.dart';
 import 'package:tb_vision/src/services/auth/auth.dart';
 import 'package:tb_vision/src/services/database/collection.dart';
@@ -18,12 +20,11 @@ class Questionaire extends StatefulWidget {
 
 class _QuestionaireState extends State<Questionaire> {
   List<dynamic> _questions = [];
-  int _currentQuestionIndex = 0;
   bool isLoading = true;
   List<String?> _answers = []; // Array to store answers
-  String? _selectedAnswer; // To store the current selection
   late DatabaseService dbService;
   late StorageService storageService;
+  var logger = Logger(printer: PrettyPrinter());
 
   @override
   void initState() {
@@ -54,114 +55,39 @@ class _QuestionaireState extends State<Questionaire> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching questions: $e");
+      logger.e("Error fetching questions", error: e);
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  void _onAnswerSelected(String answer) {
+  void _onAnswerSelected(int index, String answer) {
     setState(() {
-      _selectedAnswer = answer; // Update the selected answer
-      _answers[_currentQuestionIndex] = answer; // Update the _answers array
+      _answers[index] = answer; // Update the _answers array
     });
   }
 
-  Widget _buildQuestionCard() {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_questions.isEmpty) {
-      return const Center(child: Text("No questions found."));
-    }
-
-    var question = _questions[_currentQuestionIndex];
-    var options = question['options'] as List<dynamic>? ?? ["Yes", "No"];
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      margin: const EdgeInsets.all(16.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              question['question'] ?? "No question available",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ...options.map((option) {
-              return RadioListTile(
-                title: Text(option),
-                value: option,
-                groupValue:
-                    _selectedAnswer, // Link to _selectedAnswer for selection
-                onChanged: (value) {
-                  _onAnswerSelected(value as String);
-                },
-              );
-            }).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> nextQuestion() async {
-    if (_selectedAnswer == null) {
+  Future<void> _onSubmit() async {
+    if (_answers.contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Please select an option before move on"),
+          content: Text("Please ensure every question is answered"),
           duration: Duration(seconds: 1),
           backgroundColor: Colors.redAccent,
         ),
       );
       return;
     }
+    // try {
+    //   var payload = {"answer": _answers};
+    //   await dbService.updateDocument(
+    //       "Questionnaire", widget.questionnaireData.id, payload);
+    // } catch (e) {
+    //   logger.e("Error saving answer to db", error: e);
+    // }
 
-    if (_currentQuestionIndex < _questions.length - 1) {
-      setState(() {
-        // Move to the next question
-        _currentQuestionIndex++;
-
-        // Update _selectedAnswer to the stored answer for the new question, or reset if not answered
-        _selectedAnswer = _answers[_currentQuestionIndex];
-      });
-    } else {
-      print(_answers);
-      // Save answer to db
-      dbService = DatabaseService(client, collections);
-      try {
-        var payload = {"answer": _answers};
-        await dbService.updateDocument(
-            "Questionnaire", widget.questionnaireData.id, payload);
-      } catch (e) {
-        print(e);
-      }
-
-      _showFinishDialog();
-    }
-  }
-
-  void _previousQuestion() {
-    if (_currentQuestionIndex > 0) {
-      setState(() {
-        // Move to the previous question
-        _currentQuestionIndex--;
-
-        // Update _selectedAnswer to the stored answer for the new question
-        _selectedAnswer = _answers[_currentQuestionIndex];
-      });
-    }
+    _showFinishDialog();
   }
 
   void _showFinishDialog() {
@@ -188,38 +114,125 @@ class _QuestionaireState extends State<Questionaire> {
     );
   }
 
+  double _calculateProgress() {
+    int answeredCount = _answers.where((answer) => answer != null).length;
+    return answeredCount / _questions.length;
+  }
+
+  Widget _buildQuestionList() {
+    if (isLoading) {
+      return ListView.builder(
+          itemCount: 10,
+          itemBuilder: (BuildContext context, int index) {
+            var options = ["Yes", "No"];
+            return Skeletonizer(
+              enabled: isLoading,
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                margin: const EdgeInsets.all(16.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Mock Question Data",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ...options.map((option) {
+                        return RadioListTile(
+                          title: Text(option),
+                          value: option,
+                          onChanged: (value) {
+                            _onAnswerSelected(index, value as String);
+                          },
+                          groupValue: '',
+                        );
+                      })
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+    }
+
+    return ListView.builder(
+        padding: const EdgeInsets.all(8),
+        itemCount: _questions.length,
+        itemBuilder: (BuildContext context, int index) {
+          var question = _questions[index];
+          var options = question['options'] as List<dynamic>? ?? ["Yes", "No"];
+          return Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            margin: const EdgeInsets.all(16.0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    question['question'] ?? "No question available",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ...options.map((option) {
+                    return RadioListTile(
+                      title: Text(option),
+                      value: option,
+                      groupValue: _answers[
+                          index], // Link to _selectedAnswer for selection
+                      onChanged: (value) {
+                        _onAnswerSelected(index, value as String);
+                      },
+                    );
+                  })
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Questionnaire"),
       ),
-      body: Column(
-        children: [
-          Expanded(child: _buildQuestionCard()),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                if (_currentQuestionIndex > 0)
-                  ElevatedButton(
-                    onPressed: _previousQuestion,
-                    child: const Text("Previous"),
-                  ),
-                ElevatedButton(
-                  onPressed: nextQuestion,
-                  child: Text(_currentQuestionIndex == _questions.length - 1
-                      ? "Finish"
-                      : "Next"),
-                ),
-              ],
-            ),
+      body: Column(children: [
+        LinearProgressIndicator(
+          value: _questions.isEmpty ? 0 : _calculateProgress(),
+          backgroundColor: Colors.grey[300],
+          valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+        ),
+        Expanded(child: _buildQuestionList()),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: _onSubmit,
+                child: const Text("Submit"),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-        ],
-      ),
+        )
+      ]),
     );
   }
 }

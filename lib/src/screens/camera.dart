@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import 'package:tb_vision/src/services/auth/auth.dart';
 import 'package:tb_vision/src/services/database/collection.dart';
 import 'package:tb_vision/src/services/database/database_service.dart';
@@ -31,6 +32,7 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
   bool isCoinDetected = false;
   late DatabaseService dbService;
   late StorageService storageService;
+  var logger = Logger();
 
   @override
   void initState() {
@@ -65,16 +67,16 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
         objectDetector = ObjectDetector(model: model);
       });
       await objectDetector.loadModel();
-      print("Object detector initialized successfully");
+      logger.i("Object detector initialized successfully");
     } catch (e) {
-      print("Error during initialize object detector");
+      logger.e("Error during initialize object detector",error: e);
       rethrow;
     }
   }
 
   Future<void> _runObjectDetection(XFile image) async {
     final detections = await objectDetector.detect(imagePath: image.path);
-    print("Detections: $detections");
+    logger.i("Detections: $detections");
     setState(() {
       _detections =
           detections; // Check for lesion and coin labels in the detections
@@ -105,7 +107,7 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
           _detections!.any((detection) => detection?.label == 'lesion');
 
       if (hasLesion) {
-        print("Lesion detected!");
+        logger.i("Lesion detected!");
         // Perform actions if lesion is found
 
         await uploadImage();
@@ -118,7 +120,7 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
         );
       } else {
         // Perform actions if lesion is not found
-        print("No lesion detected.");
+        logger.i("No lesion detected.");
         ScaffoldMessenger.of(ctx).showSnackBar(
           const SnackBar(
             content: Text("No lesion detected. Try Again"),
@@ -128,7 +130,7 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
         );
       }
     } else {
-      print("No detections available.");
+      logger.i("No detections available.");
       // Handle case where no detections exist
 
       ScaffoldMessenger.of(ctx).showSnackBar(
@@ -152,12 +154,12 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
         InputFile.fromPath(path: _imageFile!.path),
         fileId: imageId,
       );
-      print("Image uploaded successfully with ID: $imageId");
+      logger.i("Image uploaded successfully with ID: $imageId");
 
       // Create the analysis document with the uploaded image ID
       await createAnalysis(imageId);
     } catch (e) {
-      print("Error during image upload: ${e.toString()}");
+      logger.e("Error during image upload",error: e);
     }
   }
 
@@ -169,10 +171,10 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
     try {
       // Create a document in the database for analysis
       final document = await dbService.createDocument("Analysis", payload);
-      print("Analysis document created successfully with ID: ${document.$id}");
+      logger.i("Analysis document created successfully with ID: ${document.$id}");
       await addAnalysisToAdministration(document.$id);
     } catch (e) {
-      print("Error during analysis document creation: ${e.toString()}");
+      logger.e("Error during analysis document creation",error: e);
     }
   }
 
@@ -185,9 +187,9 @@ class _ImageInferencePageState extends State<ImageInferencePage> {
       // Create a document in the database for analysis
       await dbService.updateDocument(
           "Administration", widget.administrationData.id, payload);
-      print("Administration document updated successfully");
+      logger.i("Administration document updated successfully");
     } catch (e) {
-      print("Error during administration document update: ${e.toString()}");
+      logger.e("Error during administration document update", error: e);
     }
   }
 

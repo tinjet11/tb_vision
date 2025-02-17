@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:tb_vision/env/env.dart';
 
 Client client = Client()
@@ -10,6 +11,7 @@ Client client = Client()
     .setProject(Env.appwriteProjectId);
 
 Account account = Account(client);
+var logger = Logger();
 
 Future<bool> sendOTP(userId, phone) async {
   try {
@@ -20,7 +22,7 @@ Future<bool> sendOTP(userId, phone) async {
     );
     return true;
   } catch (e) {
-    print(e);
+    logger.e("Error sending OTP to user", error: e);
     return false;
   }
 }
@@ -44,17 +46,17 @@ Future<Map<String, dynamic>?> checkUserExists(String userId) async {
     );
     if (userResponse.statusCode == 200) {
       final userData = json.decode(userResponse.body);
-      print("User exists: $userData");
+      logger.i("User exists: $userData");
       return userData;
     } else if (userResponse.statusCode == 404) {
-      print("User does not exist");
+      logger.i("User does not exist");
       return null;
     } else {
-      print("Error: ${userResponse.body}");
+      logger.i("Error: ${userResponse.body}");
       return null;
     }
   } catch (error) {
-    print("Account fetch failed: $error");
+    logger.e("Account fetch failed:", error: error);
     return null;
   }
 }
@@ -66,11 +68,11 @@ Future<bool> loginWithOTP(userId, otp) async {
       userId: userId,
       secret: otp,
     );
-    print('Login successful: ${result}');
+    logger.i('Login successful: $result');
     return true;
     // Navigate to home or dashboard
   } catch (e) {
-    print('Login failed: $e');
+    logger.e('Login failed: $e');
     return false;
   }
 }
@@ -81,6 +83,7 @@ Future<bool> checkSessions() async {
     await account.getSession(sessionId: "current");
     return true;
   } catch (e) {
+    logger.e("Error getting session info", error: e);
     return false;
   }
 }
